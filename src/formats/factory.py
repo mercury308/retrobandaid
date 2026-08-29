@@ -7,7 +7,9 @@ from src.formats.xdelta import XDeltaPatcher
 from src.formats.ppf import PPFPatcher
 from src.formats.aps import APSPatcher
 from src.formats.bsdiff import BSDiffPatcher
-
+"""
+Factory class to create appropriate patcher instances based on the patch file extension.
+"""
 class PatchFactory:
     _registry = {
         ".ips": IPSPatcher,
