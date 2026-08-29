@@ -49,7 +49,7 @@ class IPSPatcher(Patcher):
             f_out.write(rom_data)
 
         if progress_callback:
-            progress_callback(1.0, "IPS patch applied successfully!")
+            progress_callback(1.0, "IPS patch applied successfully")
 
         return True
                     
