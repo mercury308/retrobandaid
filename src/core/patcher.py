@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Callable, Optional, Type  
 
-class AbstractPatcher(ABC):
+class Patcher(ABC):
     """
     Abstract base class for patchers.
     """
