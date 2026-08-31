@@ -1,7 +1,7 @@
 # RetroBandaid
 
 RetroBandaid is a byte-level patch-application engine for ROM dumps and disc images. It parses a patch file's binary format directly (no external patching libraries), reconstructs the target file byte-for-byte, and for consoles where patches are
-distributed against a "clean" ROM, automatically strips a console-specific header before patching and restores it afterward, so you don't have to do that by hand with a hex editor.
+distributed against a "clean" ROM, automatically strips a console-specific header before patching and restores it afterward, so you don't have to do that by hand with a hex editor. **FOR EDUCATIONAL PURPOSES ONLY!**
 
 <img width="750" height="400" alt="Screenshot 2026-08-30 212825" src="https://github.com/user-attachments/assets/3ec5af22-aa9d-46f9-b509-60493cdfb60d" />
 
