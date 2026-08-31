@@ -1,4 +1,5 @@
 import os
+import sys
 import tkinter as tk
 from tkinter import ttk
 
@@ -19,7 +20,17 @@ PATCH_FILETYPES = [
 ROM_FILETYPES = [("All files", "*.*")]
 
 POLL_INTERVAL_MS = 100
-ICON_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "medicon.png")
+
+
+def _resource_path(relative_path: str) -> str:
+    """Resolves a bundled resource, working both from source and inside a frozen PyInstaller exe."""
+    base_path = getattr(sys, "_MEIPASS", None)
+    if base_path is None:
+        base_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    return os.path.join(base_path, relative_path)
+
+
+ICON_PATH = _resource_path(os.path.join("src", "gui", "medicon.png"))
 
 
 class RetroBandaidApp(tk.Tk):

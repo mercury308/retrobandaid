@@ -41,6 +41,17 @@ checksums before patching.
 python -m pytest tests/ -v
 ```
 
+## Building a standalone executable (Windows)
+
+```powershell
+pip install -r requirements.txt
+pyinstaller pyinstaller.spec --noconfirm
+```
+
+Produces `dist/RetroBandaid.exe` — a single windowed executable that bundles Python, `tkinter`,
+and `medicon.png`, so it can be handed to someone without Python installed. `xdelta3`/`bspatch`
+are still separate system tools and must be installed independently if those formats are needed.
+
 ## Project layout
 
 ```
