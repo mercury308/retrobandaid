@@ -45,6 +45,7 @@ magic bytes before handing it to `core/rom_manager.py`.
 | SNES | `systems/snes.py` | Detects/strips the 512-byte copier header (`.smc`); validates via the internal ROM checksum/complement pair at the LoROM/HiROM header offset. |
 | N64 | `systems/n64.py` | Detects `.z64`/`.v64`/`.n64` byte order from magic bytes; normalizes to big-endian for patching, converts back afterward. |
 | GBA | `systems/gba.py` | Validates the fixed header byte at offset `0xB2`; no header to strip. |
+| Nintendo DS | `systems/nds.py` | Validates the cartridge header; patches the complete image and recalculates its header CRC16. |
 | PS1 | `systems/ps1.py` | Detects raw 2352-byte BIN sectors vs. plain 2048-byte ISO sectors; can split/reassemble the sync+ECC sidecar around the 2048-byte data field for patching against ISO-style patches. |
 | PS2 | `systems/ps2.py` | Detects 2048-byte-sector ISO9660 images; no header to strip. |
 | Arcade (MAME-style) | `systems/arcade.py` | Lists/extracts/replaces individual chip-dump files inside a romset `.zip`. |
@@ -54,8 +55,8 @@ magic bytes before handing it to `core/rom_manager.py`.
 clear error rather than silently producing a corrupt file):
 - CHD and other compressed disc containers — decompress with an external tool first (e.g.
   `chdman extractcd`).
-- Switch (NSP/XCI) and 3DS (3DS/CIA) — these are encrypted/signed containers; byte-level
-  patching would corrupt them.
+- Switch (NSP/XCI) and 3DS (3DS/CIA) — these are encrypted/signed containers. They are
+  detected and explicitly rejected before byte-level patching could corrupt them.
 
 ## Requirements
 

@@ -12,6 +12,7 @@ EXTENSION_TO_SYSTEM: Dict[str, str] = {
     ".v64": "n64",
     ".gba": "gba",
     ".agb": "gba",
+    ".nds": "nds",
     ".bin": "ps1",
     ".cue": "ps1",
     ".iso": "ps2",

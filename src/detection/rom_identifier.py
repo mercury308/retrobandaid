@@ -4,13 +4,14 @@ from typing import Dict, Optional
 from src.core.checksum import calculate_checksums
 from src.detection.database import lookup_by_crc32, system_for_extension
 from src.detection.metadata import RomMetadata
-from src.systems import arcade, compressed_media, disc, gba, modern_consoles, n64, ps1, ps2, snes
+from src.systems import arcade, compressed_media, disc, gba, modern_consoles, n64, nds, ps1, ps2, snes
 
 # Ordered so more specific/cheaper checks run before broad ones (arcade zips, compressed media).
-_SYSTEM_MODULES: Dict[str, object] = {
+SYSTEM_MODULES: Dict[str, object] = {
     "snes": snes,
     "n64": n64,
     "gba": gba,
+    "nds": nds,
     "ps1": ps1,
     "ps2": ps2,
     "arcade": arcade,
@@ -38,10 +39,10 @@ def identify_system(file_path: str) -> Optional[str]:
         sniff = f.read(HEADER_SNIFF_SIZE)
 
     hinted = system_for_extension(extension)
-    if hinted and hinted in _SYSTEM_MODULES and _SYSTEM_MODULES[hinted].identify(sniff):
+    if hinted and hinted in SYSTEM_MODULES and SYSTEM_MODULES[hinted].identify(sniff):
         return hinted
 
-    for name, module in _SYSTEM_MODULES.items():
+    for name, module in SYSTEM_MODULES.items():
         if module.identify(sniff):
             return name
 
@@ -55,14 +56,14 @@ def identify(file_path: str) -> RomMetadata:
     extension = os.path.splitext(file_path)[1]
 
     has_header = False
-    if system and system in _SYSTEM_MODULES:
+    if system and system in SYSTEM_MODULES:
         if system in _SIZE_DEPENDENT_SYSTEMS:
             with open(file_path, "rb") as f:
                 probe = f.read()  # full read: has_header() for this system depends on total size
         else:
             with open(file_path, "rb") as f:
                 probe = f.read(HEADER_SNIFF_SIZE)
-        has_header = _SYSTEM_MODULES[system].has_header(probe)
+        has_header = SYSTEM_MODULES[system].has_header(probe)
 
     checksums = calculate_checksums(file_path)
     known_name = lookup_by_crc32(checksums.get("crc32", ""))
