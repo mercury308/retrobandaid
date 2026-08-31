@@ -1,4 +1,5 @@
 pytest>=8.0
+pyinstaller>=6.0  # only needed to build a standalone binary (Windows: .exe, Linux: native binary)
 
 # Optional external tools (not installable via pip) required at runtime for these formats:
 #   xdelta3   -> https://github.com/jmacd/xdelta  (needed by src/formats/xdelta.py)

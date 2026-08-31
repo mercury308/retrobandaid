@@ -2,6 +2,8 @@ import tkinter as tk
 from tkinter import filedialog, ttk
 from typing import Callable, Iterable, Optional, Tuple
 
+from src.gui.theme import FONT_BOLD
+
 
 class FilePicker(ttk.Frame):
     """A labeled entry + Browse button for picking an existing file or a save destination."""
@@ -26,7 +28,7 @@ class FilePicker(ttk.Frame):
         entry = ttk.Entry(self, textvariable=self.path_var)
         entry.grid(row=0, column=1, sticky="ew", padx=(4, 4))
 
-        ttk.Button(self, text="Browse...", command=self._browse).grid(row=0, column=2)
+        ttk.Button(self, text="\U0001f50d Browse", command=self._browse).grid(row=0, column=2)
 
     def _browse(self) -> None:
         if self._save_mode:
@@ -59,8 +61,10 @@ class ProgressPanel(ttk.Frame):
         )
         self.progress_bar.grid(row=0, column=0, sticky="ew")
 
-        self.status_var = tk.StringVar(value="Ready")
-        ttk.Label(self, textvariable=self.status_var, anchor="w").grid(row=1, column=0, sticky="ew", pady=(2, 0))
+        self.status_var = tk.StringVar(value="\u2728 Ready to heal your ROM~")
+        ttk.Label(self, textvariable=self.status_var, anchor="w", font=FONT_BOLD).grid(
+            row=1, column=0, sticky="ew", pady=(2, 0)
+        )
 
     def update_progress(self, percent: float, message: str = "") -> None:
         self.progress_var.set(max(0.0, min(100.0, percent)))
@@ -69,4 +73,4 @@ class ProgressPanel(ttk.Frame):
 
     def reset(self) -> None:
         self.progress_var.set(0.0)
-        self.status_var.set("Ready")
+        self.status_var.set("\u2728 Ready to heal your ROM~")

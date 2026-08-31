@@ -1,10 +1,12 @@
 import os
+import sys
 import tkinter as tk
 from tkinter import ttk
 
 from src.core.rom_manager import RomManager
 from src.gui.components import FilePicker, ProgressPanel
 from src.gui.dialogs import show_error, show_info, show_rom_info
+from src.gui.theme import PALETTE, apply_theme
 from src.utils.async_worker import AsyncWorker
 from src.utils.config_manager import ConfigManager
 from src.utils.logger import get_logger
@@ -20,19 +22,42 @@ ROM_FILETYPES = [("All files", "*.*")]
 POLL_INTERVAL_MS = 100
 
 
+def _resource_path(relative_path: str) -> str:
+    """Resolves a bundled resource, working both from source and inside a frozen PyInstaller exe."""
+    base_path = getattr(sys, "_MEIPASS", None)
+    if base_path is None:
+        base_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    return os.path.join(base_path, relative_path)
+
+
+ICON_PATH = _resource_path(os.path.join("src", "gui", "medicon.png"))
+
+
 class RetroBandaidApp(tk.Tk):
     """Main application window: pick a source ROM + patch, apply it, and show the result."""
 
     def __init__(self) -> None:
         super().__init__()
-        self.title("RetroBandaid")
+        self.title("\U0001fa79 RetroBandaid")
         self.resizable(False, False)
+        self._set_window_icon()
+        apply_theme(self)
 
         self.config_manager = ConfigManager()
         self.rom_manager = RomManager()
         self.worker = AsyncWorker()
 
         self._build_widgets()
+
+    def _set_window_icon(self) -> None:
+        """Overrides Tk's default feather icon with medicon.png, falling back to a blank icon."""
+        try:
+            icon = tk.PhotoImage(file=ICON_PATH)
+        except tk.TclError:
+            icon = tk.PhotoImage(width=1, height=1)
+            icon.put(PALETTE["bg"], to=(0, 0))
+        self.iconphoto(True, icon)
+        self._icon_ref = icon  # keep a reference so Tk doesn't garbage-collect it
 
     def _build_widgets(self) -> None:
         pad = {"padx": 10, "pady": 6}
@@ -50,10 +75,10 @@ class RetroBandaidApp(tk.Tk):
         button_row.grid(row=3, column=0, sticky="ew", **pad)
         button_row.columnconfigure((0, 1), weight=1)
 
-        self.info_button = ttk.Button(button_row, text="ROM Info", command=self._on_rom_info)
+        self.info_button = ttk.Button(button_row, text="\U0001fa79 Check ROM", command=self._on_rom_info)
         self.info_button.grid(row=0, column=0, sticky="ew", padx=(0, 4))
 
-        self.apply_button = ttk.Button(button_row, text="Apply Patch", command=self._on_apply)
+        self.apply_button = ttk.Button(button_row, text="\U0001f48a Patch it up!", command=self._on_apply)
         self.apply_button.grid(row=0, column=1, sticky="ew", padx=(4, 0))
 
         self.progress_panel = ProgressPanel(self)
@@ -105,7 +130,7 @@ class RetroBandaidApp(tk.Tk):
             self.progress_panel.update_progress(payload, error or "")
             self.after(POLL_INTERVAL_MS, self._poll_worker)
         elif kind == "done":
-            self.progress_panel.update_progress(100.0, "Done!")
+            self.progress_panel.update_progress(100.0, "All better! \U0001f380")
             self.apply_button.state(["!disabled"])
             show_info(self, "Success", "Patch applied successfully.")
         elif kind == "error":
