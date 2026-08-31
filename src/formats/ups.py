@@ -45,9 +45,12 @@ class UPSPatcher(Patcher):
             copy_len = min(len(src_data), dst_size)
             dst_data[:copy_len] = src_data[:copy_len]
 
+            records_start = f_patch.tell()
+            file_size = f_patch.seek(0, 2)
+            f_patch.seek(records_start)
+
             offset = 0
-            while f_patch.tell() < (f_patch.seek(0, 2) - 12):
-                f_patch.seek(f_patch.tell()) 
+            while f_patch.tell() < file_size - 12:
                 offset += self._read_vint(f_patch)
 
                 while True:
