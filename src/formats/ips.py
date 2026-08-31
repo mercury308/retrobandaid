@@ -5,22 +5,22 @@ class IPSPatcher(Patcher):
     """
     Patcher class for IPS patch files.
     """
-    def verify_patch(self) -> bool:
+    def validate_patch(self) -> bool:
         try:
-            with open(self.patch_patch, "rb") as f:
+            with open(self.patch_path, "rb") as f:
                 header = f.read(5)
                 return header == b"PATCH"
         except Exception:
             return False
 
     def apply_patch(self, progress_callback: Optional[Callable[[float, str], None]] = None) -> bool:
-        if not self.verify_patch():
+        if not self.validate_patch():
             raise ValueError("Invalid IPS patch file. The patch file does not start with the 'PATCH' header.")
 
         with open(self.source_path, "rb") as f_in:
             rom_data = bytearray(f_in.read())
 
-        with open(self.patch_patch, "rb") as f_patch:
+        with open(self.patch_path, "rb") as f_patch:
             f_patch.seek(5)
 
             while True:
