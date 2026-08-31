@@ -6,6 +6,9 @@ libraries), reconstructs the target file byte-for-byte, and — for consoles whe
 distributed against a "clean" ROM — automatically strips a console-specific header before
 patching and restores it afterward, so you don't have to do that by hand with a hex editor.
 
+<img width="878" height="550" alt="Screenshot 2026-08-30 212825" src="https://github.com/user-attachments/assets/d4d5967a-60b1-4144-8106-a43bda79a3bd" />
+
+
 ## What it actually does
 
 1. **Reads the patch file's binary format directly.** Each format in `src/formats/` implements
