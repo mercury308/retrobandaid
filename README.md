@@ -20,37 +20,61 @@ have to strip/restore them by hand.
 ## Requirements
 
 - Python 3.9+
-- `pip install -r requirements.txt` (only needed for running the test suite; the app itself has
-  no third-party runtime dependencies — the GUI uses the standard library's `tkinter`)
+  - **Windows:** the official python.org installer bundles `tkinter` already.
+  - **Linux:** `tkinter` is usually a separate package — install it first, e.g.
+    `sudo apt install python3-tk` (Debian/Ubuntu) or `sudo dnf install python3-tkinter` (Fedora).
+- `pip install -r requirements.txt` (only needed for running the test suite or building a
+  standalone binary; the app itself has no third-party runtime dependencies)
 - Optional, only if you need these formats: `xdelta3` and `bspatch` must be installed and on your
   `PATH` (they're invoked as external processes; there is no pure-Python fallback)
+  - Windows: `choco install xdelta3` or download prebuilt binaries manually
+  - Linux: `sudo apt install xdelta3 bsdiff` (Debian/Ubuntu) or your distro's equivalent
 
-## Usage
+## Installation
 
-```powershell
+Pick whichever fits you — both are fully supported on Windows and Linux.
+
+### Option A: Run from source (requires Python)
+
+```bash
+git clone https://github.com/mercury308/retrobandaid.git
+cd retrobandaid
 python main.py
 ```
 
-This launches the GUI: choose a source ROM, a patch file, and where to save the patched output,
-then click **Apply Patch**. Use **ROM Info** to inspect a ROM's detected system, header, and
-checksums before patching.
+No `pip install` is required just to run the app — only for tests/building (see below).
+
+### Option B: Standalone binary (no Python required for the end user)
+
+Build it yourself once (see "Building a standalone executable"), then hand the resulting binary
+to anyone — they don't need Python or any dependencies installed.
+
+## Usage
+
+Whichever way you launch it, the GUI works the same: choose a source ROM, a patch file, and where
+to save the patched output, then click **Apply Patch**. Use **ROM Info** to inspect a ROM's
+detected system, header, and checksums before patching.
 
 ## Running tests
 
-```powershell
+```bash
 python -m pytest tests/ -v
 ```
 
-## Building a standalone executable (Windows)
+## Building a standalone executable (Windows or Linux)
 
-```powershell
+```bash
 pip install -r requirements.txt
 pyinstaller pyinstaller.spec --noconfirm
 ```
 
-Produces `dist/RetroBandaid.exe` — a single windowed executable that bundles Python, `tkinter`,
-and `medicon.png`, so it can be handed to someone without Python installed. `xdelta3`/`bspatch`
-are still separate system tools and must be installed independently if those formats are needed.
+Bundles Python, `tkinter`, and `medicon.png` into a single windowed binary in `dist/`:
+- Windows: `dist/RetroBandaid.exe`
+- Linux: `dist/RetroBandaid` (run with `./dist/RetroBandaid`; you may need `chmod +x` first)
+
+Run the build command on the OS you want a binary for — PyInstaller doesn't cross-compile.
+`xdelta3`/`bspatch` are still separate system tools and must be installed independently on the
+target machine if those formats are needed.
 
 ## Project layout
 
