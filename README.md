@@ -1,10 +1,7 @@
 # RetroBandaid
 
-RetroBandaid is a byte-level patch-application engine for ROM dumps and disc images, with a
-Tkinter GUI on top. It parses a patch file's binary format directly (no external patching
-libraries), reconstructs the target file byte-for-byte, and — for consoles where patches are
-distributed against a "clean" ROM — automatically strips a console-specific header before
-patching and restores it afterward, so you don't have to do that by hand with a hex editor.
+RetroBandaid is a byte-level patch-application engine for ROM dumps and disc images. It parses a patch file's binary format directly (no external patching libraries), reconstructs the target file byte-for-byte, and for consoles where patches are
+distributed against a "clean" ROM, automatically strips a console-specific header before patching and restores it afterward, so you don't have to do that by hand with a hex editor.
 
 <img width="750" height="400" alt="Screenshot 2026-08-30 212825" src="https://github.com/user-attachments/assets/3ec5af22-aa9d-46f9-b509-60493cdfb60d" />
 
@@ -31,11 +28,11 @@ patching and restores it afterward, so you don't have to do that by hand with a 
 
 | Format | Extension(s) | How it's applied |
 |---|---|---|
-| IPS | `.ips` | Pure Python. 3-byte big-endian offset + 2-byte size records, with RLE support (`size == 0`). |
-| BPS | `.bps` | Pure Python. Variable-length integers; SourceRead/TargetRead/SourceCopy/TargetCopy commands. |
-| UPS | `.ups` | Pure Python. XOR-based diff against the source, delta-encoded record offsets. |
-| PPF | `.ppf` (v1/v2/v3) | Pure Python. Fixed-offset header, then offset+length+payload records. |
-| APS | `.aps` | Pure Python. Standard (non-N64) mode only; N64-mode APS patches are rejected. |
+| IPS | `.ips` | 3-byte big-endian offset + 2-byte size records, with RLE support (`size == 0`). |
+| BPS | `.bps` | Variable-length integers; SourceRead/TargetRead/SourceCopy/TargetCopy commands. |
+| UPS | `.ups` | XOR-based diff against the source, delta-encoded record offsets. |
+| PPF | `.ppf` (v1/v2/v3) | Fixed-offset header, then offset+length+payload records. |
+| APS | `.aps` | Standard (non-N64) mode only; N64-mode APS patches are rejected. |
 | xdelta / VCDIFF | `.xdelta`, `.vcdiff` | Shells out to the `xdelta3` binary — must be installed and on `PATH`. |
 | BSDiff | `.bsdiff`, `.bdf` | Shells out to the `bspatch` binary — must be installed and on `PATH`. |
 
