@@ -152,9 +152,5 @@ tests/        # pytest suite
   recomputing them, which is fine for most emulators but not strictly spec-correct if a patch
   changes sector contents.
 
-## License
-
-[MIT](LICENSE)
-
 
 
