@@ -19,6 +19,7 @@ PATCH_FILETYPES = [
 ROM_FILETYPES = [("All files", "*.*")]
 
 POLL_INTERVAL_MS = 100
+ICON_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "medicon.png")
 
 
 class RetroBandaidApp(tk.Tk):
@@ -38,9 +39,12 @@ class RetroBandaidApp(tk.Tk):
         self._build_widgets()
 
     def _set_window_icon(self) -> None:
-        """Overrides Tk's default feather icon with a blank one matching the theme background."""
-        icon = tk.PhotoImage(width=1, height=1)
-        icon.put(PALETTE["bg"], to=(0, 0))
+        """Overrides Tk's default feather icon with medicon.png, falling back to a blank icon."""
+        try:
+            icon = tk.PhotoImage(file=ICON_PATH)
+        except tk.TclError:
+            icon = tk.PhotoImage(width=1, height=1)
+            icon.put(PALETTE["bg"], to=(0, 0))
         self.iconphoto(True, icon)
         self._icon_ref = icon  # keep a reference so Tk doesn't garbage-collect it
 
