@@ -20,6 +20,9 @@ class APSPatcher(Patcher):
         with open(self.patch_path, "rb") as f_patch:
             f_patch.seek(4)
             patch_mode = f_patch.read(1)
+            if patch_mode != b"\x00":
+                raise ValueError("Only standard (non-N64) APS patches are supported.")
+            f_patch.seek(50, 1)  # skip the fixed-length description field
 
             with open(self.source_path, "rb") as f_src:
                 rom_data = bytearray(f_src.read())

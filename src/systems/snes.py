@@ -14,7 +14,8 @@ def has_header(data: bytes) -> bool:
 def strip_header(data: bytes) -> Tuple[bytes, bytes]:
     """Removes the copier header if present. Returns (rom_data, header_bytes)."""
     if has_header(data):
-        return split_header(data, COPIER_HEADER_SIZE)
+        header, rom_data = split_header(data, COPIER_HEADER_SIZE)
+        return rom_data, header
     return data, b""
 
 
