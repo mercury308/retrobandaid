@@ -1,0 +1,5 @@
+pytest>=8.0
+
+# Optional external tools (not installable via pip) required at runtime for these formats:
+#   xdelta3   -> https://github.com/jmacd/xdelta  (needed by src/formats/xdelta.py)
+#   bspatch   -> part of bsdiff/bszip              (needed by src/formats/bsdiff.py)
