@@ -155,7 +155,4 @@ tests/        # pytest suite
 [MIT](LICENSE)
 
 
-## License
-
-[MIT](LICENSE)
 
