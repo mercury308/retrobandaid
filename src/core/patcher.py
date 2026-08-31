@@ -5,13 +5,13 @@ class Patcher(ABC):
     """
     Abstract base class for patchers.
     """
-    def __init__(self, source_path: str, patch_patch: str, output_path: str):
+    def __init__(self, source_path: str, patch_path: str, output_path: str):
         self.source_path = source_path
-        self.patch_patch = patch_patch
+        self.patch_path = patch_path
         self.output_path = output_path
 
     @abstractmethod
-    def verify_patch(self) -> bool:
+    def validate_patch(self) -> bool:
         """
         Verify patch against the source file.
         Returns True if the patch is valid, False otherwise.
