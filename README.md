@@ -1,21 +1,61 @@
 # RetroBandaid
 
-A lightweight ROM/disc-image patcher with a Tkinter GUI. Applies patch files to ROM dumps,
-automatically handling console-specific quirks (copier headers, byte-order swaps) so you don't
-have to strip/restore them by hand.
+RetroBandaid is a byte-level patch-application engine for ROM dumps and disc images, with a
+Tkinter GUI on top. It parses a patch file's binary format directly (no external patching
+libraries), reconstructs the target file byte-for-byte, and — for consoles where patches are
+distributed against a "clean" ROM — automatically strips a console-specific header before
+patching and restores it afterward, so you don't have to do that by hand with a hex editor.
 
-## Features
+## What it actually does
 
-- **Patch formats:** IPS, BPS, UPS, PPF (v1/v2/v3), APS, xdelta/VCDIFF, BSDiff
-- **System-aware patching:** automatically strips/restores headers for supported systems before
-  and after patching, so patches made against a headerless ROM still apply to a headered dump
-  - SNES copier headers (.smc)
-  - N64 byte-order conversion (.z64/.v64/.n64)
-  - GBA, PS1 (BIN/CUE + ISO), PS2, MAME-style arcade zips (detection/inspection helpers)
-  - PSP CISO decompression; CHD and encrypted modern-console containers (Switch/3DS) are detected
-    but explicitly unsupported for direct byte patching — see "Limitations" below
-- **Checksums:** CRC32, MD5, SHA256 for verifying source ROMs
-- **Simple Tkinter GUI:** pick a source ROM + patch file, apply, done
+1. **Reads the patch file's binary format directly.** Each format in `src/formats/` implements
+   the format's spec from scratch: record-based literal/RLE patching for IPS, variable-length
+   integer decoding + delta-encoded copy/read commands for BPS, XOR-based diffing for UPS,
+   record-based patching for PPF/APS, and subprocess delegation to `xdelta3`/`bspatch` for
+   xdelta/VCDIFF and BSDiff (those two have no pure-Python implementation here).
+2. **Identifies the ROM's target system** (`src/detection/rom_identifier.py`) by checking the
+   file extension against a known table, then verifying with a system-specific magic-byte/
+   checksum check (e.g. SNES internal header checksum, N64 magic bytes, GBA fixed header byte).
+3. **Strips any console-specific header** (`src/systems/*.py`) before applying the patch, so a
+   patch built against a headerless ROM still lines up correctly against a headered dump — then
+   re-attaches it afterward. For N64, "header" instead means byte-order: the ROM is normalized to
+   big-endian before patching and converted back to its original byte order afterward.
+4. **Writes the patched output** to the path you choose, leaving the original source file
+   untouched.
+
+## Supported patch formats
+
+| Format | Extension(s) | How it's applied |
+|---|---|---|
+| IPS | `.ips` | Pure Python. 3-byte big-endian offset + 2-byte size records, with RLE support (`size == 0`). |
+| BPS | `.bps` | Pure Python. Variable-length integers; SourceRead/TargetRead/SourceCopy/TargetCopy commands. |
+| UPS | `.ups` | Pure Python. XOR-based diff against the source, delta-encoded record offsets. |
+| PPF | `.ppf` (v1/v2/v3) | Pure Python. Fixed-offset header, then offset+length+payload records. |
+| APS | `.aps` | Pure Python. Standard (non-N64) mode only; N64-mode APS patches are rejected. |
+| xdelta / VCDIFF | `.xdelta`, `.vcdiff` | Shells out to the `xdelta3` binary — must be installed and on `PATH`. |
+| BSDiff | `.bsdiff`, `.bdf` | Shells out to the `bspatch` binary — must be installed and on `PATH`. |
+
+`src/formats/factory.py` picks the right class by file extension and validates the patch's
+magic bytes before handing it to `core/rom_manager.py`.
+
+## Supported consoles / systems
+
+| System | Module | What's handled |
+|---|---|---|
+| SNES | `systems/snes.py` | Detects/strips the 512-byte copier header (`.smc`); validates via the internal ROM checksum/complement pair at the LoROM/HiROM header offset. |
+| N64 | `systems/n64.py` | Detects `.z64`/`.v64`/`.n64` byte order from magic bytes; normalizes to big-endian for patching, converts back afterward. |
+| GBA | `systems/gba.py` | Validates the fixed header byte at offset `0xB2`; no header to strip. |
+| PS1 | `systems/ps1.py` | Detects raw 2352-byte BIN sectors vs. plain 2048-byte ISO sectors; can split/reassemble the sync+ECC sidecar around the 2048-byte data field for patching against ISO-style patches. |
+| PS2 | `systems/ps2.py` | Detects 2048-byte-sector ISO9660 images; no header to strip. |
+| Arcade (MAME-style) | `systems/arcade.py` | Lists/extracts/replaces individual chip-dump files inside a romset `.zip`. |
+| PSP (CISO) | `systems/compressed_media.py` | Decompresses CISO-compressed UMD dumps (`decompress_ciso`). |
+
+**Explicitly unsupported for direct byte patching** (detected, but patching is refused with a
+clear error rather than silently producing a corrupt file):
+- CHD and other compressed disc containers — decompress with an external tool first (e.g.
+  `chdman extractcd`).
+- Switch (NSP/XCI) and 3DS (3DS/CIA) — these are encrypted/signed containers; byte-level
+  patching would corrupt them.
 
 ## Requirements
 
@@ -51,15 +91,26 @@ to anyone — they don't need Python or any dependencies installed.
 
 ## Usage
 
-Whichever way you launch it, the GUI works the same: choose a source ROM, a patch file, and where
-to save the patched output, then click **Apply Patch**. Use **ROM Info** to inspect a ROM's
-detected system, header, and checksums before patching.
+1. Launch the app: `python main.py` (or run the built binary).
+2. **Source ROM** → Browse to the original, unpatched ROM/disc image file.
+3. **Patch File** → Browse to the `.ips`/`.bps`/`.ups`/`.ppf`/`.aps`/`.xdelta`/`.bsdiff` file you
+   want to apply.
+4. **Output ROM** → choose where the patched result should be written (the source file is never
+   modified in place).
+5. *(Optional)* Click **ROM Info** first to see the detected system, whether a copier header was
+   found, and the CRC32/MD5/SHA256 of the source file — useful for confirming you have the right
+   base ROM before patching.
+6. Click **Apply Patch**. The status bar reports progress; a dialog confirms success or reports
+   the specific error (e.g. wrong patch magic bytes, source ROM too small for a given offset).
 
 ## Running tests
 
 ```bash
 python -m pytest tests/ -v
 ```
+
+`tests/` covers binary round-trips for each pure-Python format (hand-constructed patch bytes
+verified against expected output) plus SNES header stripping and N64 byte-order conversion.
 
 ## Building a standalone executable (Windows or Linux)
 
@@ -98,3 +149,13 @@ tests/        # pytest suite
 - PS1 raw BIN sector reconstruction preserves original sync/EDC/ECC bytes rather than
   recomputing them, which is fine for most emulators but not strictly spec-correct if a patch
   changes sector contents.
+
+## License
+
+[MIT](LICENSE)
+
+
+## License
+
+[MIT](LICENSE)
+
