@@ -27,6 +27,13 @@ class RomManager:
         metadata = rom_identifier.identify(source_path)
         system_module = rom_identifier.SYSTEM_MODULES.get(metadata.system) if metadata.system else None
 
+        if metadata.system == "modern_consoles":
+            from src.systems.modern_consoles import identify_container, raise_unsupported
+
+            with open(source_path, "rb") as f:
+                container = identify_container(f.read(4), metadata.extension)
+            raise_unsupported(container or "modern-console")
+
         with open(source_path, "rb") as f:
             source_data = f.read()
 
@@ -49,7 +56,7 @@ class RomManager:
             with open(tmp_output, "rb") as f:
                 patched_data = f.read()
 
-        if system_module and header:
+        if system_module:
             patched_data = system_module.restore_header(patched_data, header)
 
         with open(output_path, "wb") as f:

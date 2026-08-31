@@ -1,4 +1,4 @@
-from src.systems import n64, snes
+from src.systems import n64, nds, snes
 
 
 def test_snes_strip_and_restore_copier_header():
@@ -32,3 +32,14 @@ def test_n64_byte_order_round_trip():
     normalized, fmt = n64.to_big_endian(v64_data)
     assert normalized == z64_data
     assert n64.from_big_endian(normalized, fmt) == v64_data
+
+
+def test_nds_identifies_valid_header_and_repairs_header_crc():
+    rom = bytearray(0x400)
+    rom[0x12] = 0
+    rom[0x20:0x24] = (0x200).to_bytes(4, "little")
+    rom[0x2C:0x30] = (0x20).to_bytes(4, "little")
+
+    assert nds.identify(rom) is True
+    restored = nds.restore_header(bytes(rom), b"")
+    assert int.from_bytes(restored[0x15E:0x160], "little") == nds.calculate_header_crc(restored)
